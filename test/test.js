@@ -276,19 +276,19 @@ describe('JSX', function () {
             }]
         )
     });
-    it('should parse <Tag val=${"test"}/>', function () {
+    it('should parse <Tag val=${47}/>', function () {
         var mock = ReactMock();
         jsx(mock, {
             Tag: "<Tag>"
         })
         `
-            <Tag  val=${"test"}/>
+            <Tag  val=${47}/>
         `
         assert.deepEqual(
             mock.arguments, [{
                 "name": "<Tag>",
                 "attributes": {
-                    "val": "test"
+                    "val": 47
                 },
                 "children": []
             }]
