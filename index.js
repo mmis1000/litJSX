@@ -487,7 +487,7 @@ var rules = {
  * @typedef {any} templeteFunction
  */
 /**
- * @type {Map<string, templeteFunction>}
+ * @type {Map<string[], templeteFunction>}
  */
 var cache = new Map();
 
@@ -497,11 +497,14 @@ var cache = new Map();
  * @param {Object<string, {createElement: function(any,any,any):any}>} components 
  */
 function jsx(React, components) {
-    return function (strings, ...value) {
-        let rawJoined = strings.join('\u0000');
 
-        if (cache.has(rawJoined)) {
-            return cache.get(rawJoined)(React, components, ...value);
+    /**
+     * @param {string[]} strings
+     * @param {any} value
+     */
+    return function (strings, ...value) {
+        if (cache.has(strings)) {
+            return cache.get(strings)(React, components, ...value);
         }
 
         let placeholders = []
@@ -655,7 +658,7 @@ function jsx(React, components) {
         // console.timeEnd('newFunc');
         // console.log(func.toString());
         
-        cache.set(rawJoined, func);
+        cache.set(strings, func);
 
         return func(React, components, ...value);
     }
