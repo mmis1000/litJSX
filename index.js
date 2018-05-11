@@ -487,9 +487,9 @@ var rules = {
  * @typedef {any} templeteFunction
  */
 /**
- * @type {Map<string[], templeteFunction>}
+ * @type {WeakMap<string[], templeteFunction>}
  */
-var cache = new Map();
+var cache = new WeakMap();
 
 /**
  * 
