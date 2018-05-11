@@ -484,12 +484,26 @@ var rules = {
 }
 
 /**
+ * @typedef {any} templeteFunction
+ */
+/**
+ * @type {Map<string, templeteFunction>}
+ */
+var cache = new Map();
+
+/**
  * 
  * @param {{createElement: function(any,any,any):any}} React 
  * @param {Object<string, {createElement: function(any,any,any):any}>} components 
  */
 function jsx(React, components) {
     return function (strings, ...value) {
+        let rawJoined = strings.join('\u0000');
+
+        if (cache.has(rawJoined)) {
+            return cache.get(rawJoined)(React, components, ...value);
+        }
+
         let placeholders = []
         let joined = "";
         let rand = Math.random().toString(16).slice(2, 10)
@@ -641,6 +655,8 @@ function jsx(React, components) {
         // console.timeEnd('newFunc');
         // console.log(func.toString());
         
+        cache.set(rawJoined, func);
+
         return func(React, components, ...value);
     }
 }
@@ -660,6 +676,7 @@ if (typeof module !== "undefined") {
 } else if (typeof window !== undefined) {
     // @ts-ignore
     window.litJSX = {
+        cache,
         STATE,
         JSX_STATE,
         rules,
