@@ -499,12 +499,12 @@ var cache = new WeakMap();
  */
 function unescapeHtml(unsafe) {
     return unsafe
-        .replace(/&amp;/g, "&")
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
         .replace(/&quot;/g, "\"")
         .replace(/&#039;/g, "'")
-        .replace(/&nbsp;/g, "\u00A0");
+        .replace(/&nbsp;/g, "\u00A0")
+        .replace(/&amp;/g, "&");
 }
 
 /**

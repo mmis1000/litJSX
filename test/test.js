@@ -443,7 +443,7 @@ describe('JSX', function () {
             Tag: "<Tag>"
         })
         `
-            &amp;&lt;&gt;&quot;&#039;&nbsp;
+            &amp;lt; &lt;&gt;&quot;&#039;&nbsp;
         `
 
         assert.deepEqual(
@@ -451,7 +451,7 @@ describe('JSX', function () {
                 "name": "<Fragment>",
                 "attributes": null,
                 "children": [
-                    "&<>\"'\u00A0"
+                    "&lt; <>\"'\u00A0"
                 ]
             }]
         )
