@@ -504,7 +504,7 @@ function unescapeHtml(unsafe) {
         .replace(/&gt;/g, ">")
         .replace(/&quot;/g, "\"")
         .replace(/&#039;/g, "'")
-        .replace(/&nbsp;/g, "\u0090");
+        .replace(/&nbsp;/g, "\u00A0");
 }
 
 /**

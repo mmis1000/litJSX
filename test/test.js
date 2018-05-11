@@ -451,7 +451,7 @@ describe('JSX', function () {
                 "name": "<Fragment>",
                 "attributes": null,
                 "children": [
-                    "&<>\"'\u0090"
+                    "&<>\"'\u00A0"
                 ]
             }]
         )
