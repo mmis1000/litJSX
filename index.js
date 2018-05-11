@@ -486,10 +486,26 @@ var rules = {
 /**
  * @typedef {any} templeteFunction
  */
+
 /**
  * @type {WeakMap<string[], templeteFunction>}
  */
 var cache = new WeakMap();
+
+/**
+ * 
+ * @param {string} unsafe 
+ * @returns {string}
+ */
+function unescapeHtml(unsafe) {
+    return unsafe
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, "\"")
+        .replace(/&#039;/g, "'")
+        .replace(/&nbsp;/g, " ");
+}
 
 /**
  * 
@@ -543,7 +559,7 @@ function jsx(React, components) {
              */
             function gen(node) {
                 if (typeof node === 'string') {
-                    return JSON.stringify(node).replace(placeholderRegex, function (match) {
+                    return JSON.stringify(unescapeHtml(node)).replace(placeholderRegex, function (match) {
                         return '" , ' + match + ' , "'
                     });
                 } else {

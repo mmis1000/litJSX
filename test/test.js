@@ -437,4 +437,23 @@ describe('JSX', function () {
             }]
         )
     });
+    it('unescape entities if there are', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            &amp;&lt;&gt;&quot;&#039;&nbsp;
+        `
+
+        assert.deepEqual(
+            mock.arguments, [{
+                "name": "<Fragment>",
+                "attributes": null,
+                "children": [
+                    "&<>\"' "
+                ]
+            }]
+        )
+    });
 })
