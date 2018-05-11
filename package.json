@@ -4,14 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "build": "uglifyjs index.js -o litJSX.min.js"
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "uglify-es": "^3.3.9"
-  },
   "devDependencies": {
+    "uglify-es": "^3.3.9",
     "chai": "^4.1.2",
     "mocha": "^5.1.1"
   }
