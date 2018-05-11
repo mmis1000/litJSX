@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "build": "uglifyjs index.js -o litJSX.min.js"
+    "build": "uglifyjs index.js -o litJSX.min.js --compress --mangle"
   },
   "author": "",
   "license": "MIT",
