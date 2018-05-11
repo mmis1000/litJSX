@@ -267,18 +267,13 @@ describe('JSX', function () {
         `
             <Tag/>
         `
+
         assert.deepEqual(
             mock.arguments, [{
-                    name: '<Tag>',
-                    attributes: null,
-                    children: []
-                },
-                {
-                    name: '<Fragment>',
-                    attributes: null,
-                    children: [0]
-                }
-            ]
+                "name": "<Tag>",
+                "attributes": null,
+                "children": []
+            }]
         )
     });
     it('should parse <Tag val=${"test"}/>', function () {
@@ -291,18 +286,12 @@ describe('JSX', function () {
         `
         assert.deepEqual(
             mock.arguments, [{
-                    name: '<Tag>',
-                    attributes: {
-                        val: 'test'
-                    },
-                    children: []
+                "name": "<Tag>",
+                "attributes": {
+                    "val": "test"
                 },
-                {
-                    name: '<Fragment>',
-                    attributes: null,
-                    children: [0]
-                }
-            ]
+                "children": []
+            }]
         )
     });
     it('should parse <Tag ${"val"}=test/>', function () {
@@ -315,18 +304,12 @@ describe('JSX', function () {
         `
         assert.deepEqual(
             mock.arguments, [{
-                    name: '<Tag>',
-                    attributes: {
-                        val: 'test'
-                    },
-                    children: []
+                "name": "<Tag>",
+                "attributes": {
+                    "val": "test"
                 },
-                {
-                    name: '<Fragment>',
-                    attributes: null,
-                    children: [0]
-                }
-            ]
+                "children": []
+            }]
         )
     });
     it('should parse <Tag v${"a"}l=t${"es"}t/>', function () {
@@ -339,18 +322,12 @@ describe('JSX', function () {
         `
         assert.deepEqual(
             mock.arguments, [{
-                    name: '<Tag>',
-                    attributes: {
-                        val: 'test'
-                    },
-                    children: []
+                "name": "<Tag>",
+                "attributes": {
+                    "val": "test"
                 },
-                {
-                    name: '<Fragment>',
-                    attributes: null,
-                    children: [0]
-                }
-            ]
+                "children": []
+            }]
         )
     });
     it('should parse <Tag ...${{test:"included"}} v${"a"}l=t${"es"}t val1=t${"es"}t1 v${"a"}l2=test2/>', function () {
@@ -363,21 +340,15 @@ describe('JSX', function () {
         `
         assert.deepEqual(
             mock.arguments, [{
-                    name: '<Tag>',
-                    attributes: {
-                        val: 'test',
-                        val1: 'test1',
-                        val2: 'test2',
-                        test: 'included'
-                    },
-                    children: []
+                "name": "<Tag>",
+                "attributes": {
+                    "val": "test",
+                    "val1": "test1",
+                    "val2": "test2",
+                    "test": "included"
                 },
-                {
-                    name: '<Fragment>',
-                    attributes: null,
-                    children: [0]
-                }
-            ]
+                "children": []
+            }]
         )
     });
     it('should parse <Tag><div></div></Tag>', function () {
@@ -390,19 +361,16 @@ describe('JSX', function () {
         `
         assert.deepEqual(
             mock.arguments, [{
-                    name: 'div',
-                    attributes: null,
-                    children: []
+                    "name": "div",
+                    "attributes": null,
+                    "children": []
                 },
                 {
-                    name: '<Tag>',
-                    attributes: null,
-                    children: [0]
-                },
-                {
-                    name: '<Fragment>',
-                    attributes: null,
-                    children: [1]
+                    "name": "<Tag>",
+                    "attributes": null,
+                    "children": [
+                        0
+                    ]
                 }
             ]
         )
@@ -461,16 +429,12 @@ describe('JSX', function () {
         `
         assert.deepEqual(
             mock.arguments, [{
-                    name: '<Tag>',
-                    attributes: null,
-                    children: ['123']
-                },
-                {
-                    name: '<Fragment>',
-                    attributes: null,
-                    children: [0]
-                }
-            ]
+                "name": "<Tag>",
+                "attributes": null,
+                "children": [
+                    "123"
+                ]
+            }]
         )
     });
 })

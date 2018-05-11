@@ -509,6 +509,11 @@ function jsx(React, components) {
         var tree = /** @type {any}*/(walker.run()).tree;
         // console.timeEnd('parse');
 
+        if (tree.elements.length === 1 && typeof tree.elements[0] !== "string") {
+            // unwrap fragment that only has one child
+            tree = tree.elements[0]
+        }
+
         /**
          * 
          * @param {JSXElement} dom 
