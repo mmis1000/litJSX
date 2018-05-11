@@ -99,7 +99,7 @@ templeteFunction`
         ${templeteFunction`another element`}
         or
         ${[templeteFunction`array of elements`]}
-        just like original jax
+        just like original jsx
     </div>
 `
 ```
