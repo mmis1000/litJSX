@@ -246,7 +246,7 @@ function ReactMock() {
     res.id = 0;
     res.arguments = [];
     res.Fragment = "<Fragment>";
-    res.createElement = function (name, attributes, children) {
+    res.createElement = function (name, attributes, ...children) {
         res.arguments.push({
             name,
             attributes,

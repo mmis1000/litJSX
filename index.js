@@ -522,7 +522,7 @@ function jsx(React, components) {
             function gen(node) {
                 if (typeof node === 'string') {
                     return JSON.stringify(node).replace(placeholderRegex, function (match) {
-                        return '" + ' + match + ' + "'
+                        return '" , ' + match + ' , "'
                     });
                 } else {
                     return `
@@ -614,9 +614,9 @@ function jsx(React, components) {
                             }).join(',\n') + 
                         '}': // property only
                             'null'
-                        }, [
+                        }, 
                             ${node.elements.map(gen).join(",\n")}
-                        ]) 
+                        ) 
                     `
                 }
             }

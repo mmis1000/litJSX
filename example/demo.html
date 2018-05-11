@@ -15,8 +15,22 @@
     <div id="root"></div>
     <script type="text/javascript">
         /* glboal ReactDOM, litJSX, React*/
+        var html = litJSX.jsx(React, {});
         ReactDOM.render(
-            litJSX.jsx(React, {})`<h1>Hello, ${"world!"}</h1> My love`,
+            html`
+            <h1>
+                Hello, ${"world!"}
+                ${
+                    html`<small>and my dear</small>`
+                }
+            </h1> 
+            <h2>My love</h2>
+            <ul>
+                ${
+                    ['javascript', 'html'].map((t, i)=>html`<li key=${console.log(i), i}>${t}</li>`)
+                }
+            </ul>
+            `,
             document.getElementById('root')
         );
     </script>
