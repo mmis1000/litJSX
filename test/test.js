@@ -1,0 +1,476 @@
+var litJSX = require('../');
+var chai = require('chai');
+var assert = chai.assert;
+
+var jsx = litJSX.jsx;
+var parse = function (str) {
+    var walker = new litJSX.Context(litJSX.rules, str);
+    var tree = /** @type {any}*/ (walker.run()).tree;
+    return tree;
+}
+
+describe('Parser', function () {
+    it('should parse 123', function () {
+        var tree = parse('123');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [
+                "123"
+            ],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag/>', function () {
+        var tree = parse('<tag/>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {},
+                "elements": [],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag></tag>', function () {
+        var tree = parse('<tag></tag>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {},
+                "elements": [],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+
+    });
+    it('should parse <tag>123</tag>', function () {
+        var tree = parse('<tag>123</tag>');
+
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {},
+                "elements": [
+                    "123"
+                ],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+
+    });
+    it('should parse <tag><tag/></tag>', function () {
+        var tree = parse('<tag><tag/></tag>')
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {},
+                "elements": [{
+                    "name": "tag",
+                    "attributes": {},
+                    "elements": [],
+                    "attributeMixins": []
+                }],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag><tag/><tag/></tag>', function () {
+        var tree = parse('<tag><tag/><tag/></tag>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {},
+                "elements": [{
+                        "name": "tag",
+                        "attributes": {},
+                        "elements": [],
+                        "attributeMixins": []
+                    },
+                    {
+                        "name": "tag",
+                        "attributes": {},
+                        "elements": [],
+                        "attributeMixins": []
+                    }
+                ],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag test/>', function () {
+        var tree = parse('<tag test/>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {
+                    "test": ""
+                },
+                "elements": [],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag test=/>', function () {
+        var tree = parse('<tag test=/>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {
+                    "test": ""
+                },
+                "elements": [],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag test=123/>', function () {
+        var tree = parse('<tag test=123/>')
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {
+                    "test": "123"
+                },
+                "elements": [],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag test=\'123\'/>', function () {
+        var tree = parse('<tag test=\'123\'/>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {
+                    "test": "123"
+                },
+                "elements": [],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+
+    });
+    it('should parse <tag test="123"/>', function () {
+        var tree = parse('<tag test="123"/>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {
+                    "test": "123"
+                },
+                "elements": [],
+                "attributeMixins": []
+            }],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag ...test/>', function () {
+        var tree = parse('<tag ...test/>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "tag",
+                "attributes": {},
+                "elements": [],
+                "attributeMixins": [
+                    "test"
+                ]
+            }],
+            "attributeMixins": []
+        })
+    });
+    it('should parse <tag ...test test1=123 test2="456" test3=\'567\'>content</tag><tag/>', function () {
+        var tree = parse('<tag ...test test1=123 test2="456" test3=\'567\'>content</tag><tag/>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                    "name": "tag",
+                    "attributes": {
+                        "test1": "123",
+                        "test2": "456",
+                        "test3": "567"
+                    },
+                    "elements": [
+                        "content"
+                    ],
+                    "attributeMixins": [
+                        "test"
+                    ]
+                },
+                {
+                    "name": "tag",
+                    "attributes": {},
+                    "elements": [],
+                    "attributeMixins": []
+                }
+            ],
+            "attributeMixins": []
+        })
+    });
+});
+
+function ReactMock() {
+    var res = {};
+    res.id = 0;
+    res.arguments = [];
+    res.Fragment = "<Fragment>";
+    res.createElement = function (name, attributes, children) {
+        res.arguments.push({
+            name,
+            attributes,
+            children
+        })
+        return res.id++;
+    }
+
+    return res;
+}
+
+describe('JSX', function () {
+    it('should parse <Tag/>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag/>
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                    name: '<Tag>',
+                    attributes: null,
+                    children: []
+                },
+                {
+                    name: '<Fragment>',
+                    attributes: null,
+                    children: [0]
+                }
+            ]
+        )
+    });
+    it('should parse <Tag val=${"test"}/>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag  val=${"test"}/>
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                    name: '<Tag>',
+                    attributes: {
+                        val: 'test'
+                    },
+                    children: []
+                },
+                {
+                    name: '<Fragment>',
+                    attributes: null,
+                    children: [0]
+                }
+            ]
+        )
+    });
+    it('should parse <Tag ${"val"}=test/>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag ${"val"}=test/>
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                    name: '<Tag>',
+                    attributes: {
+                        val: 'test'
+                    },
+                    children: []
+                },
+                {
+                    name: '<Fragment>',
+                    attributes: null,
+                    children: [0]
+                }
+            ]
+        )
+    });
+    it('should parse <Tag v${"a"}l=t${"es"}t/>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag v${"a"}l=t${"es"}t/>
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                    name: '<Tag>',
+                    attributes: {
+                        val: 'test'
+                    },
+                    children: []
+                },
+                {
+                    name: '<Fragment>',
+                    attributes: null,
+                    children: [0]
+                }
+            ]
+        )
+    });
+    it('should parse <Tag ...${{test:"included"}} v${"a"}l=t${"es"}t val1=t${"es"}t1 v${"a"}l2=test2/>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag ...${{test:"included"}}  v${"a"}l=t${"es"}t val1=t${"es"}t1 v${"a"}l2=test2/>
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                    name: '<Tag>',
+                    attributes: {
+                        val: 'test',
+                        val1: 'test1',
+                        val2: 'test2',
+                        test: 'included'
+                    },
+                    children: []
+                },
+                {
+                    name: '<Fragment>',
+                    attributes: null,
+                    children: [0]
+                }
+            ]
+        )
+    });
+    it('should parse <Tag><div></div></Tag>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag><div></div></Tag>
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                    name: 'div',
+                    attributes: null,
+                    children: []
+                },
+                {
+                    name: '<Tag>',
+                    attributes: null,
+                    children: [0]
+                },
+                {
+                    name: '<Fragment>',
+                    attributes: null,
+                    children: [1]
+                }
+            ]
+        )
+    });
+    it('should parse <Tag></Tag><div></div>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag></Tag>
+            <div></div>
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                    name: '<Tag>',
+                    attributes: null,
+                    children: []
+                },
+                {
+                    name: 'div',
+                    attributes: null,
+                    children: []
+                },
+                {
+                    name: '<Fragment>',
+                    attributes: null,
+                    children: [0, 1]
+                }
+            ]
+        )
+    });
+    it('should parse 123', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            123
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                name: '<Fragment>',
+                attributes: null,
+                children: ['123']
+            }]
+        )
+    });
+    it('should parse <Tag>123</Tag>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag>123</Tag>
+        `
+        assert.deepEqual(
+            mock.arguments, [{
+                    name: '<Tag>',
+                    attributes: null,
+                    children: ['123']
+                },
+                {
+                    name: '<Fragment>',
+                    attributes: null,
+                    children: [0]
+                }
+            ]
+        )
+    });
+})
