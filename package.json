@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "build": "uglifyjs index.js -o litJSX.min.js --compress --mangle"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "uglify-es": "^3.3.9",
     "chai": "^4.1.2",
-    "mocha": "^5.1.1"
+    "istanbul": "^0.4.5",
+    "mocha": "^5.1.1",
+    "uglify-es": "^3.3.9"
   }
 }
