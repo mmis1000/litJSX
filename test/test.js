@@ -239,6 +239,19 @@ describe('Parser', function () {
             "attributeMixins": []
         })
     });
+    it('parse a 10000 tags templete', function () {
+        var tempelete = "";
+        for (let i = 0; i < 10000; i++) {
+            if (Math.random() > 0.33) {
+                tempelete += "<tag/>"
+            } else if (Math.random() > 0.5) {
+                tempelete += "<tag>only text here</tag>"
+            } else {
+                tempelete += "<tag ...t0 t1 t2=t3 t4=/>"
+            }
+        }
+        parse(tempelete)
+    });
 });
 
 function ReactMock() {
