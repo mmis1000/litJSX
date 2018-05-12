@@ -46,17 +46,11 @@ class Context {
 
         /** @type {Rule[]} */
         this.stack = [];
-        /** @type {Rule} */
-        this.current
 
         /** @type {string} */
         this.str = str;
         /** @type {number} */
         this.ptr = 0;
-
-        Object.defineProperty(this, 'current', {
-            get:()=> {return this.stack[this.stack.length - 1]}
-        })
     }
 
     enter() {
@@ -94,12 +88,12 @@ class Context {
                 this.state = STATE.INIT;
             }
 
-            if (this.current == null) {
+            if (this.stack[this.stack.length - 1] == null) {
                 this.finished = true;
                 break;
             }
 
-            this.current[this.state](this);
+            this.stack[this.stack.length - 1][this.state](this);
         }
 
         return this.data;
@@ -112,31 +106,20 @@ class Context {
      * @returns {string}
      */
     walk(regex) {
-        // reset the regex
         let ptr = this.ptr;
 
-        let result = null;
+        // reset the regex to current position
+        regex.lastIndex = this.ptr;
 
-        regex.lastIndex = 0;
+        let res = regex.exec(this.str);
 
-        while (ptr < this.str.length && !regex.test(this.str.slice(ptr))) {
-            regex.lastIndex = 0;
-            ptr++;
-        }
-
-        if (ptr >= this.str.length) {
-            if (regex.test(this.str.slice(ptr))) {
-                // exactly match empty string?
-                let oldPtr = this.ptr;
-                this.ptr = ptr;
-                return this.str.slice(oldPtr, ptr)
-            } else {
-                return null;
-            }
+        if (res && res.index >= this.ptr) {
+            let position = res.index;
+            let text = this.str.slice(ptr, position);
+            this.ptr = position;
+            return text;
         } else {
-            let oldPtr = this.ptr
-            this.ptr = ptr
-            return this.str.slice(oldPtr, ptr)
+            return null;
         }
     }
 
@@ -148,11 +131,19 @@ class Context {
         regex.lastIndex = 0;
         return regex.test(this.str.slice(this.ptr));
     }
+
+    /**
+     * whether it is end of string
+     * @returns {boolean}
+     */
+    isEOS() {
+        return this.ptr >= this.str.length;
+    }
 }
 
 var regexs = {
-    until_not_space: /^[^\s\r\n]/,
-    until_tag: /^<|^$/,
+    until_not_space: /[^\s\r\n]/g,
+    until_tag: /<|$/g,
 }
 
 var JSX_STATE = Object.assign({}, STATE, {
@@ -221,7 +212,7 @@ class JSXElement {
  * @property {function(string, Object<string, string>, string[], JSXElement[]):void} addAndEnter
  * @property {function(string, Object<string, string>, string[], JSXElement[]):void} add
  * @property {function():void} leave
- * @property {JSXElement} top
+ * @property {function():JSXElement} getTop
  */
 
 /**
@@ -252,21 +243,19 @@ var rules = {
             data.tree = new JSXElement("__Fragment__");
             data.stack = [data.tree];
 
-            Object.defineProperty(data, 'top', {
-                get () {return data.stack[data.stack.length - 1]}
-            })
+            data.getTop = ()=>{return data.stack[data.stack.length - 1]}
 
             data.addAndEnter = function (name, attributes, mixins, elements) {
-                var newElement = new JSXElement(name, attributes, elements, data.top);
+                var newElement = new JSXElement(name, attributes, elements, data.getTop());
                 newElement.attributeMixins = mixins || [];
-                data.top.append(newElement);
+                data.getTop().append(newElement);
                 data.stack.push(newElement);
             }
 
             data.add = function (name, attributes, mixins, elements) {
-                var newElement = new JSXElement(name, attributes, elements, data.top);
+                var newElement = new JSXElement(name, attributes, elements, data.getTop());
                 newElement.attributeMixins = mixins || [];
-                data.top.append(newElement);
+                data.getTop().append(newElement);
             }
 
             data.leave = function () {
@@ -274,7 +263,7 @@ var rules = {
             }
         }
 
-        if (context.expect(/^$/)) {
+        if (context.isEOS()) {
             context.state = JSX_STATE.LEAVE;
             if (data.stack.length !== 1) {
                 throw new Error('unclosed tags ' + data.stack.slice(1).map((t)=>`<${t.name}>`).join(""))
@@ -341,13 +330,16 @@ var rules = {
                     }
 
                     // check if the tag matches
-                    if ((data.name  || "__Fragment__") !== data.parent.top.name) {
-                        throw new Error(`wat? <${data.parent.top.name}></${data.name}>`)
+                    if ((data.name  || "__Fragment__") !== data.parent.getTop().name) {
+                        throw new Error(`wat? <${data.parent.getTop().name}></${data.name}>`)
                     }
                     data.parent.leave();
                 } else if (data.right === "close") {
+                    if (!data.name) {
+                        throw new Error("you can't write a self close fragment!")
+                    }
                     // self close tag
-                    data.parent.add(data.name || '__Fragment__', data.attributes, data.attributeMixins, []);
+                    data.parent.add(data.name, data.attributes, data.attributeMixins, []);
                 } else {
                     // a both end open tag
                     data.parent.addAndEnter(data.name || '__Fragment__', data.attributes, data.attributeMixins, []);
@@ -375,7 +367,7 @@ var rules = {
         },
         [JSX_STATE.TAG.NAME](/** @type {Context} */context) {
             context.walk(regexs.until_not_space);
-            var name = context.walk(/^(\s|\/?>)/)
+            var name = context.walk(/(\s|\/?>)/g)
             var data = /** @type {TagData} */( /** @type {any} */(context.data));
             data.name = name;
             
@@ -397,14 +389,14 @@ var rules = {
             [JSX_STATE.TAG.ATTRIB.SPREAD] (/** @type {Context} */context) {
                 // remove ...
                 context.ptr += 3;
-                var text = context.walk(/^(\s|\r|\n|\/?>)/)
+                var text = context.walk(/(\s|\r|\n|\/?>)/g)
                 var parentData = /** @type {TagData} */( /** @type {any} */(context.data.parent));
 
                 parentData.attributeMixins.push(text);
                 context.state = JSX_STATE.INIT;
             },
             [JSX_STATE.TAG.ATTRIB.NAME](/** @type {Context} */context) {
-                var text = context.walk(/^(=|\s|\/?>)/);
+                var text = context.walk(/(=|\s|\/?>)/g);
 
                 var data = /** @type {AttributeData} */( /** @type {any} */(context.data));
                 var parentData = /** @type {TagData} */( /** @type {any} */(context.data.parent));
@@ -428,14 +420,14 @@ var rules = {
             [JSX_STATE.TAG.ATTRIB.VALUE](/** @type {Context} */context) {
                 if (context.expect(/^'/)) {
                     context.ptr++;
-                    var text = context.walk(/^'/);
+                    var text = context.walk(/'/g);
                     context.ptr++;
                 } else if (context.expect(/^"/)) {
                     context.ptr++;
-                    var text = context.walk(/^"/);
+                    var text = context.walk(/"/g);
                     context.ptr++;
                 } else {
-                    var text = context.walk(/^(\s|\/?>)/);
+                    var text = context.walk(/(\s|\/?>)/g);
                 }
                 var data = /** @type {AttributeData} */( /** @type {any} */(context.data));
                 var parentData = /** @type {TagData} */( /** @type {any} */(context.data.parent));
@@ -471,7 +463,7 @@ var rules = {
             var data = /** @type {RootData} */( /** @type {any} */(context.data.parent));
 
             if (text.match(/[^\s\r\n]/)) {
-                data.top.elements.push(text.replace(/[\s|\r|\n]+$/, ''));
+                data.getTop().elements.push(text.replace(/[\s|\r|\n]+$/, ''));
             }
 
             context.state = JSX_STATE.LEAVE;
