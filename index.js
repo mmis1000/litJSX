@@ -1,7 +1,7 @@
 // @ts-check
 
 (function() {
-    
+
 class Data {
     constructor(parent = null) {
         /** @type {Data} */
@@ -248,7 +248,6 @@ var rules = {
         var data = /** @type {RootData} */( /** @type {any} */(context.data));
 
         if (!data.initilized) {
-
             data.initilized = true;
             data.tree = new JSXElement("__Fragment__");
             data.stack = [data.tree];
@@ -274,7 +273,6 @@ var rules = {
                 data.stack.pop();
             }
         }
-
 
         if (context.expect(/^$/)) {
             context.state = JSX_STATE.LEAVE;
@@ -390,7 +388,7 @@ var rules = {
                 if (context.expect(/^\/?>/)) {
                     // right tag
                     context.state = STATE.LEAVE;
-                } else if (context.expect(/^\.\.\.[^\s]/)) {
+                } else if (context.expect(/^\.\.\.\S/)) {
                     context.state = JSX_STATE.TAG.ATTRIB.SPREAD;
                 } else {
                     context.state = JSX_STATE.TAG.ATTRIB.NAME;
@@ -413,7 +411,7 @@ var rules = {
 
                 if (text.length === 0) {
                     throw new Error('attribute without name')
-                } else if (context.expect(/^=[^\s]+/)) {
+                } else if (context.expect(/^=\S/)) {
                     context.ptr++;
                     data.name = text;
                     context.state = JSX_STATE.TAG.ATTRIB.VALUE;
@@ -428,18 +426,16 @@ var rules = {
                 }
             },
             [JSX_STATE.TAG.ATTRIB.VALUE](/** @type {Context} */context) {
-                if (context.expect(/^['"']/)) {
-                    if (context.expect(/^'/)) {
-                        context.ptr++;
-                        var text = context.walk(/^'/);
-                        context.ptr++;
-                    } else {
-                        context.ptr++;
-                        var text = context.walk(/^"/);
-                        context.ptr++;
-                    }
+                if (context.expect(/^'/)) {
+                    context.ptr++;
+                    var text = context.walk(/^'/);
+                    context.ptr++;
+                } else if (context.expect(/^"/)) {
+                    context.ptr++;
+                    var text = context.walk(/^"/);
+                    context.ptr++;
                 } else {
-                    var text = context.walk(/^(\s|\/>|>)/);
+                    var text = context.walk(/^(\s|\/?>)/);
                 }
                 var data = /** @type {AttributeData} */( /** @type {any} */(context.data));
                 var parentData = /** @type {TagData} */( /** @type {any} */(context.data.parent));
