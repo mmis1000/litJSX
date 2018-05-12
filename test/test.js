@@ -10,6 +10,22 @@ var parse = function (str) {
 }
 
 describe('Parser', function () {
+    it('should parse <>123</>', function () {
+        var tree = parse('<>123</>');
+        assert.deepEqual(tree.toJSON(), {
+            "name": "__Fragment__",
+            "attributes": {},
+            "elements": [{
+                "name": "__Fragment__",
+                "attributeMixins": [],
+                "attributes": {},
+                "elements": [
+                    "123"
+                ]
+            }],
+            "attributeMixins": []
+        })
+    });
     it('should parse 123', function () {
         var tree = parse('123');
         assert.deepEqual(tree.toJSON(), {
@@ -129,8 +145,8 @@ describe('Parser', function () {
             "attributeMixins": []
         })
     });
-    it('should parse <tag test=/>', function () {
-        var tree = parse('<tag test=/>');
+    it('should parse <tag test= />', function () {
+        var tree = parse('<tag test= />');
         assert.deepEqual(tree.toJSON(), {
             "name": "__Fragment__",
             "attributes": {},
@@ -289,6 +305,27 @@ describe('JSX', function () {
             }]
         )
     });
+    it('should parse <Tag>${"123"}</Tag>', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag>${"123"}</Tag>
+        `
+
+        assert.deepEqual(
+            mock.arguments, [{
+                "name": "<Tag>",
+                "attributes": null,
+                "children": [
+                    "",
+                    "123",
+                    ""
+                ]
+            }]
+        )
+    });
     it('should parse <Tag val=${47}/>', function () {
         var mock = ReactMock();
         jsx(mock, {
@@ -343,13 +380,13 @@ describe('JSX', function () {
             }]
         )
     });
-    it('should parse <Tag ...${{test:"included"}} v${"a"}l=t${"es"}t val1=t${"es"}t1 v${"a"}l2=test2/>', function () {
+    it('should parse <Tag ...${{test:"included"}} val=t${"es"}t val1=${"test1"} v${"a"}l2=test2/>', function () {
         var mock = ReactMock();
         jsx(mock, {
             Tag: "<Tag>"
         })
         `
-            <Tag ...${{test:"included"}}  v${"a"}l=t${"es"}t val1=t${"es"}t1 v${"a"}l2=test2/>
+            <Tag ...${{test:"included"}}  val=t${"es"}t val1=${"test1"} v${"a"}l2=test2/>
         `
         assert.deepEqual(
             mock.arguments, [{
