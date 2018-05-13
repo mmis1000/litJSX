@@ -73,6 +73,51 @@ class Context {
     }
 
     run() {
+        try {
+            return this._run()
+        } catch (err) {
+            // error reports
+
+            let lines = this.str.match(/[^\r\n]+\r?\n?/g);
+            let ptr = this.ptr;
+            let line = 0;
+            let consumedChars = 0;
+            let col = 0;
+
+            while (consumedChars < ptr) {
+                let newConsumedChars = consumedChars + lines[line].length;
+                
+                if (newConsumedChars >= ptr) {
+                    col = ptr - consumedChars;
+                    break;
+                }
+
+                consumedChars = newConsumedChars;
+                line++;
+            }
+
+            function dup(str, len) {
+                var res = '';
+                while (len-- > 0) {
+                    res += str;
+                }
+                return res;
+            }
+
+            let newMessage = (
+                `at\n${lines[line]}\n` + 
+                `${dup(' ', col)}^ at line ${line} col ${col}\n` +
+                err.message
+            )
+
+            let newError = new Error(newMessage);
+            /** @type {any} */(newError).originalError = err;
+
+            throw newError;
+        }
+    }
+
+    _run() {
         this.stack.push(this.rule);
 
         while (!this.finished) {
@@ -90,10 +135,9 @@ class Context {
 
             if (this.stack[this.stack.length - 1] == null) {
                 this.finished = true;
-                break;
+            } else {
+                this.stack[this.stack.length - 1][this.state](this);
             }
-
-            this.stack[this.stack.length - 1][this.state](this);
         }
 
         return this.data;
