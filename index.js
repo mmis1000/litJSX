@@ -6,7 +6,10 @@
 
     class Data {
         constructor(parent = null) {
-            /** @type {Data} */
+            /** 
+             * the parent data container
+             * @type {Data} 
+             */
             this.parent = parent
         }
     }
@@ -37,33 +40,52 @@
          * @param {string} str
          */
         constructor(rule, str) {
-            /** @type {Rule} */
+            /** 
+             * the initial rule set
+             * @type {Rule} 
+             */
             this.rule = rule;
-            /** @type {Data} */
+            /** 
+             * the data container
+             * @type {Data} 
+             */
             this.data = new Data;
-            /** @type {boolean} */
+            /** 
+             * whether the state machine is terminated
+             * @type {boolean} 
+             */
             this.finished = false;
-            /** @type {Rule|symbol} */
+            /** 
+             * next state of current state michine to run
+             * @type {Rule|symbol} 
+             */
             this.state = STATE.INIT
-
-            /** @type {Rule[]} */
+            /**
+             * the rule set currently used
+             * @type {Rule[]} 
+             */
             this.stack = [];
-
-            /** @type {string} */
+            /** 
+             * text to parse
+             * @type {string} 
+             */
             this.str = str;
-            /** @type {number} */
+            /** 
+             * current pointer position
+             * @type {number} 
+             */
             this.ptr = 0;
         }
 
+        /**
+         * push new data container to stack
+         */
         enter() {
-            /**
-             * @type {Data}
-             */
             this.data = new Data(this.data);
         }
 
         /**
-         * @returns {void}
+         * pop the data stack
          */
         leave() {
             if (this.data.parent != null) {
@@ -74,14 +96,18 @@
             }
         }
 
+        /**
+         * wrapper for _run to print better error message
+         * @returns {Data}
+         */
         run() {
             try {
                 return this._run()
             } catch (err) {
                 // error reports
 
-                let lines = this.str.match(/[^\r\n]+\r?\n?/g);
-                let ptr = this.ptr;
+                const lines = this.str.match(/[^\r\n]+\r?\n?/g);
+                const ptr = this.ptr;
                 let line = 0;
                 let consumedChars = 0;
                 let col = 0;
@@ -98,21 +124,27 @@
                     line++;
                 }
 
+                /**
+                 * dup the str for num times
+                 * @param {string} str 
+                 * @param {number} len 
+                 * @returns {string}
+                 */
                 function dup(str, len) {
-                    var res = '';
+                    let res = '';
                     while (len-- > 0) {
                         res += str;
                     }
                     return res;
                 }
 
-                let newMessage = (
+                const newMessage = (
                     `at\n${lines[line]}\n` +
                     `${dup(' ', col)}^ at line ${line} col ${col}\n` +
                     err.message
                 )
 
-                let newError = new Error(newMessage);
+                const newError = new Error(newMessage);
                 /** @type {any} */
                 (newError).originalError = err;
 
@@ -120,6 +152,10 @@
             }
         }
 
+        /**
+         * run the machine and get the result
+         * @returns {Data}
+         */
         _run() {
             this.stack.push(this.rule);
 
@@ -153,16 +189,16 @@
          * @returns {string}
          */
         walk(regex) {
-            let ptr = this.ptr;
+            const ptr = this.ptr;
 
             // reset the regex to current position
             regex.lastIndex = this.ptr;
 
-            let res = regex.exec(this.str);
+            const res = regex.exec(this.str);
 
             if (res && res.index >= this.ptr) {
-                let position = res.index;
-                let text = this.str.slice(ptr, position);
+                const position = res.index;
+                const text = this.str.slice(ptr, position);
                 this.ptr = position;
                 return text;
             } else {
@@ -173,6 +209,7 @@
         /**
          * test whether current position match specifiec regex
          * @param {RegExp} regex 
+         * @returns {boolean}
          */
         expect(regex) {
             regex.lastIndex = 0;
@@ -188,12 +225,12 @@
         }
     }
 
-    var regexs = {
+    const regexs = {
         until_not_space: /[^\s\r\n]/g,
         until_tag: /<|$/g,
     }
 
-    var JSX_STATE = Object.assign({}, STATE, {
+    const JSX_STATE = Object.assign({}, STATE, {
         MATCH_TAG: id('match_tag'),
         TAG: {
             LEFT: {
@@ -221,15 +258,30 @@
          * @param {(JSXElement|string)[]} elements 
          */
         constructor(name = "", attributes = {}, elements = [], parent = null) {
-            /** @type {string} */
+            /** 
+             * the tag name '__Fagment__' if it is a jsx fragment
+             * @type {string} 
+             */
             this.name = name;
-            /** @type {Object<string, string>} */
+            /** 
+             * properties of this tag
+             * @type {Object<string, string>} 
+             */
             this.attributes = attributes;
-            /** @type {string[]} */
+            /** 
+             * list of ...mixins
+             * @type {string[]} 
+             */
             this.attributeMixins = [];
-            /** @type {(JSXElement|string)[]} */
+            /** 
+             * children og this element
+             * @type {(JSXElement|string)[]} 
+             */
             this.elements = elements;
-            /** @type {JSXElement} */
+            /** 
+             * parent element
+             * @type {JSXElement} 
+             */
             this.parent = parent;
         }
 
@@ -241,7 +293,12 @@
             this.elements.push(element);
         }
 
+        /**
+         * serialize
+         * @returns {Object}
+         */
         toJSON() {
+            // remove parent from property or the serialize will fail
             return {
                 name: this.name,
                 attributes: this.attributes,
@@ -259,7 +316,7 @@
      * @property {function(string, Object<string, string>, string[], JSXElement[]):void} addAndEnter
      * @property {function(string, Object<string, string>, string[], JSXElement[]):void} add
      * @property {function():void} leave
-     * @property {function():JSXElement} getTop
+     * @property {function():JSXElement} peak
      */
 
     /**
@@ -281,33 +338,33 @@
      */
 
     /** @type {Rule} */
-    var rules = {
+    const rules = {
         [JSX_STATE.INIT]( /** @type {Context} */ context) {
-            var data = /** @type {RootData} */ ( /** @type {any} */ (context.data));
+            const data = /** @type {RootData} */ ( /** @type {any} */ (context.data));
 
             if (!data.initilized) {
                 data.initilized = true;
                 data.tree = new JSXElement("__Fragment__");
                 data.stack = [data.tree];
 
-                data.getTop = () => {
+                data.peak = () => {
                     return data.stack[data.stack.length - 1]
                 }
 
-                data.addAndEnter = function (name, attributes, mixins, elements) {
-                    var newElement = new JSXElement(name, attributes, elements, data.getTop());
+                data.addAndEnter = (name, attributes, mixins, elements) => {
+                    const newElement = new JSXElement(name, attributes, elements, data.peak());
                     newElement.attributeMixins = mixins || [];
-                    data.getTop().append(newElement);
+                    data.peak().append(newElement);
                     data.stack.push(newElement);
                 }
 
-                data.add = function (name, attributes, mixins, elements) {
-                    var newElement = new JSXElement(name, attributes, elements, data.getTop());
+                data.add = (name, attributes, mixins, elements) => {
+                    const newElement = new JSXElement(name, attributes, elements, data.peak());
                     newElement.attributeMixins = mixins || [];
-                    data.getTop().append(newElement);
+                    data.peak().append(newElement);
                 }
 
-                data.leave = function () {
+                data.leave = () => {
                     data.stack.pop();
                 }
             }
@@ -336,7 +393,7 @@
         },
         TAG: {
             [JSX_STATE.INIT]( /** @type {Context} */ context) {
-                var data = /** @type {TagData} */ ( /** @type {any} */ (context.data));
+                const data = /** @type {TagData} */ ( /** @type {any} */ (context.data));
 
                 if (!data.initilized) {
                     data.initilized = true;
@@ -379,8 +436,8 @@
                         }
 
                         // check if the tag matches
-                        if ((data.name || "__Fragment__") !== data.parent.getTop().name) {
-                            throw new Error(`wat? <${data.parent.getTop().name}></${data.name}>`)
+                        if ((data.name || "__Fragment__") !== data.parent.peak().name) {
+                            throw new Error(`wat? <${data.parent.peak().name}></${data.name}>`)
                         }
                         data.parent.leave();
                     } else if (data.right === "close") {
@@ -401,7 +458,7 @@
             },
             LEFT: {
                 [JSX_STATE.INIT]( /** @type {Context} */ context) {
-                    var data = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
+                    const data = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
                     if (context.expect(/^<\//)) {
                         context.ptr += 2
@@ -416,8 +473,8 @@
             },
             [JSX_STATE.TAG.NAME]( /** @type {Context} */ context) {
                 context.walk(regexs.until_not_space);
-                var name = context.walk(/(\s|\/?>)/g)
-                var data = /** @type {TagData} */ ( /** @type {any} */ (context.data));
+                const name = context.walk(/(\s|\/?>)/g)
+                const data = /** @type {TagData} */ ( /** @type {any} */ (context.data));
                 data.name = name;
 
                 context.state = STATE.INIT;
@@ -438,17 +495,17 @@
                 [JSX_STATE.TAG.ATTRIB.SPREAD]( /** @type {Context} */ context) {
                     // remove ...
                     context.ptr += 3;
-                    var text = context.walk(/(\s|\r|\n|\/?>)/g)
-                    var parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
+                    const text = context.walk(/(\s|\r|\n|\/?>)/g)
+                    const parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
                     parentData.attributeMixins.push(text);
                     context.state = JSX_STATE.INIT;
                 },
                 [JSX_STATE.TAG.ATTRIB.NAME]( /** @type {Context} */ context) {
-                    var text = context.walk(/(=|\s|\/?>)/g);
+                    const text = context.walk(/(=|\s|\/?>)/g);
 
-                    var data = /** @type {AttributeData} */ ( /** @type {any} */ (context.data));
-                    var parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
+                    const data = /** @type {AttributeData} */ ( /** @type {any} */ (context.data));
+                    const parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
                     if (text.length === 0) {
                         throw new Error('attribute without name')
@@ -467,19 +524,23 @@
                     }
                 },
                 [JSX_STATE.TAG.ATTRIB.VALUE]( /** @type {Context} */ context) {
+                    /**
+                     * @type {string}
+                     */
+                    let text;
                     if (context.expect(/^'/)) {
                         context.ptr++;
-                        var text = context.walk(/'/g);
+                        text = context.walk(/'/g);
                         context.ptr++;
                     } else if (context.expect(/^"/)) {
                         context.ptr++;
-                        var text = context.walk(/"/g);
+                        text = context.walk(/"/g);
                         context.ptr++;
                     } else {
-                        var text = context.walk(/(\s|\/?>)/g);
+                        text = context.walk(/(\s|\/?>)/g);
                     }
-                    var data = /** @type {AttributeData} */ ( /** @type {any} */ (context.data));
-                    var parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
+                    const data = /** @type {AttributeData} */ ( /** @type {any} */ (context.data));
+                    const parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
                     parentData.attributes[data.name] = text;
                     context.state = STATE.INIT;
@@ -487,7 +548,7 @@
             },
             RIGHT: {
                 [JSX_STATE.INIT]( /** @type {Context} */ context) {
-                    var data = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
+                    const data = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
                     if (context.expect(/^\/>/)) {
                         context.ptr += 2;
@@ -503,16 +564,16 @@
         },
         TEXT: {
             [JSX_STATE.INIT]( /** @type {Context} */ context) {
-                var text = context.walk(regexs.until_tag);
+                const text = context.walk(regexs.until_tag);
 
                 if (text == null) {
                     throw new Error('unknown state, how should I enter here?')
                 }
 
-                var data = /** @type {RootData} */ ( /** @type {any} */ (context.data.parent));
+                const data = /** @type {RootData} */ ( /** @type {any} */ (context.data.parent));
 
                 if (text.match(/[^\s\r\n]/)) {
-                    data.getTop().elements.push(text.replace(/[\s|\r|\n]+$/, ''));
+                    data.peak().elements.push(text.replace(/[\s|\r|\n]+$/, ''));
                 }
 
                 context.state = JSX_STATE.LEAVE;
@@ -527,10 +588,10 @@
     /**
      * @type {WeakMap<string[], templeteFunction>}
      */
-    var cache = new WeakMap();
+    const cache = new WeakMap();
 
     /**
-     * 
+     * unescape some common html entity subset
      * @param {string} unsafe 
      * @returns {string}
      */
@@ -545,24 +606,26 @@
     }
 
     /**
-     * 
+     * create the tag templete function
      * @param {{createElement: function(any,any,any):any}} React 
      * @param {Object<string, {createElement: function(any,any,any):any}>} components 
      */
     function jsx(React, components) {
 
         /**
+         * the template function
          * @param {string[]} strings
          * @param {any} value
+         * @returns {any} the jsx element
          */
-        return function (strings, ...value) {
+        return function templete(strings, ...value) {
             if (cache.has(strings)) {
                 return cache.get(strings)(React, components, ...value);
             }
 
-            let placeholders = []
+            const placeholders = []
             let joined = "";
-            let rand = Math.random().toString(16).slice(2, 10)
+            const rand = Math.random().toString(16).slice(2, 10)
 
             for (let i = 0; i < strings.length; i++) {
                 if (i > 0) {
@@ -572,11 +635,11 @@
                 joined += strings[i];
             }
 
-            var placeholderRegex = new RegExp(`\\$place_${rand}_\\d+\\$`, "g");
-            var walker = new Context(rules, joined);
+            const placeholderRegex = new RegExp(`\\$place_${rand}_\\d+\\$`, "g");
+            const walker = new Context(rules, joined);
 
             // console.time('parse');
-            var tree = /** @type {any}*/ (walker.run()).tree;
+            let tree = /** @type {any}*/ (walker.run()).tree;
             // console.timeEnd('parse');
 
             if (tree.elements.length === 1 && typeof tree.elements[0] !== "string") {
@@ -585,12 +648,20 @@
             }
 
             /**
-             * 
+             * generate the js function source for the whole dom
              * @param {JSXElement} dom 
+             * @returns {string}
              */
             function codegen(dom) {
+
+                /**
+                 * generate source for given property
+                 * @param {JSXElement} node 
+                 * @param {string} key 
+                 * @returns {string}
+                 */
                 function mapToPropertyString(node, key) {
-                    var prop = ''
+                    let prop = ''
 
                     if (key.match(placeholderRegex)) {
                         // placeholder in key cl${"s"}s=test
@@ -603,9 +674,9 @@
 
                     prop += ':'
 
-                    var value = node.attributes[key];
+                    const value = node.attributes[key];
 
-                    var res = value.match(placeholderRegex);
+                    const res = value.match(placeholderRegex);
 
                     if (res) {
                         if (res[0] === value) {
@@ -626,8 +697,9 @@
 
 
                 /**
-                 * 
+                 * generate the js function source for given node
                  * @param {JSXElement} node 
+                 * @returns {string}
                  */
                 function gen(node) {
                     if (typeof node === 'string') {
@@ -671,17 +743,9 @@
                 return "return " + gen(dom).replace(/^[\s\r\n]+/, '');
             }
 
+            const code = codegen(tree);
 
-
-            // console.time('gen');
-            var code = codegen(tree);
-            // console.timeEnd('gen');
-            // console.log(code);
-
-            // console.time('newFunc');
-            var func = new Function("React", "components", ...placeholders, code);
-            // console.timeEnd('newFunc');
-            // console.log(func.toString());
+            const func = new Function("React", "components", ...placeholders, code);
 
             cache.set(strings, func);
 
