@@ -268,6 +268,46 @@ describe('Parser', function () {
         }
         parse(tempelete)
     });
+    it('throws on <tag>', function () {
+        assert.throws(function () {
+            parse('<tag>')
+        }, /unclosed tags/)
+    })
+    it('throws on <tag></tag2>', function () {
+        assert.throws(function () {
+            parse('<tag></tag2>')
+        }, /unmateched tags/)
+    })
+    it('throws on <tag>\\n</tag2>', function () {
+        assert.throws(function () {
+            parse('<tag>\n</tag2>')
+        }, /unmateched tags/)
+    })
+    it('throws on </tag/>', function () {
+        assert.throws(function () {
+            parse('</tag/>')
+        }, /both end closed tag/)
+    })
+    it('throws on </ />', function () {
+        assert.throws(function () {
+            parse('</ />')
+        }, /both end closed tag/)
+    })
+    it('throws on < />', function () {
+        assert.throws(function () {
+            parse('< />')
+        }, /self close fragment/)
+    })
+    it('throws on <tag =val/>', function () {
+        assert.throws(function () {
+            parse('<tag =val/>')
+        }, /attribute without name/)
+    })
+    it('throws on <tag></tag attr >', function () {
+        assert.throws(function () {
+            parse('<tag></tag attr >')
+        }, /close tag can't has attribute/)
+    })
 });
 
 function ReactMock() {
@@ -505,5 +545,16 @@ describe('JSX', function () {
                 ]
             }]
         )
+    });
+    it('throws on <Tag ...test/>', function () {
+        var mock = ReactMock();
+        assert.throws(function (){
+            jsx(mock, {
+                Tag: "<Tag>"
+            })
+            `
+                <Tag ...test/>
+            `
+        }, /cannot expand a string test/)
     });
 })

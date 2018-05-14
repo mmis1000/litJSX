@@ -139,9 +139,9 @@
                 }
 
                 const newMessage = (
-                    `at\n${lines[line]}\n` +
-                    `${dup(' ', col)}^ at line ${line} col ${col}\n` +
-                    err.message
+                    `${lines[line]}\n` +
+                    `${dup(' ', col)}^ at line ${line + 1} col ${col}\n` +
+                    dup(' ', col + 2) + err.message
                 )
 
                 const newError = new Error(newMessage);
@@ -372,7 +372,7 @@
             if (context.isEOS()) {
                 context.state = JSX_STATE.LEAVE;
                 if (data.stack.length !== 1) {
-                    throw new Error('unclosed tags ' + data.stack.slice(1).map((t) => `<${t.name}>`).join(""))
+                    throw new SyntaxError('unclosed tags ' + data.stack.slice(1).map((t) => `<${t.name}>`).join(""))
                 }
             } else {
                 context.state = JSX_STATE.SKIP_SPACE;
@@ -429,20 +429,20 @@
                     // console.log(data)
 
                     if (data.left === "close" && data.right === "close") {
-                        throw new Error('both end clossed tag');
+                        throw new SyntaxError('both end closed tag');
                     } else if (data.left === "close") {
                         if (Object.keys(data.attributes).length > 0) {
-                            throw new Error("close tag can't has attribute");
+                            throw new SyntaxError("close tag can't has attribute");
                         }
 
                         // check if the tag matches
                         if ((data.name || "__Fragment__") !== data.parent.peak().name) {
-                            throw new Error(`wat? <${data.parent.peak().name}></${data.name}>`)
+                            throw new SyntaxError(`unmateched tags <${data.parent.peak().name}></${data.name}>`)
                         }
                         data.parent.leave();
                     } else if (data.right === "close") {
                         if (!data.name) {
-                            throw new Error("you can't write a self close fragment!")
+                            throw new SyntaxError("you can't write a self close fragment!")
                         }
                         // self close tag
                         data.parent.add(data.name, data.attributes, data.attributeMixins, []);
@@ -508,7 +508,7 @@
                     const parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
                     if (text.length === 0) {
-                        throw new Error('attribute without name')
+                        throw new SyntaxError('attribute without name')
                     } else if (context.expect(/^=\S/)) {
                         context.ptr++;
                         data.name = text;
@@ -615,7 +615,7 @@
         /**
          * the template function
          * @param {string[]} strings
-         * @param {any} value
+         * @param {...any} value
          * @returns {any} the jsx element
          */
         return function templete(strings, ...value) {
