@@ -613,6 +613,25 @@ describe('JSX', function () {
 
         assert.equal(mock.arguments.length, 10001)
     });
+    it('parse and rerun a 10000 tags templete for 100 times (cache test)', function () {
+        var template = "";
+        for (let i = 0; i < 10000; i++) {
+            if (Math.random() > 0.33) {
+                template += "<tag/>"
+            } else if (Math.random() > 0.5) {
+                template += "<tag>only text here</tag>"
+            } else {
+                template += "<tag t1 t2=t3 t4=/>"
+            }
+        }
+
+        var strings = [template]
+
+        for (let i = 0; i < 100; i++) {
+            var mock = ReactMock();
+            var res = jsx(mock, {Tag: "<Tag>"})(strings);
+        }
+    });
     it('throws on <Tag ...test/>', function () {
         var mock = ReactMock();
         assert.throws(function (){
