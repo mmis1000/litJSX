@@ -255,46 +255,46 @@ describe('Parser', function () {
             "attributeMixins": []
         })
     });
-    it('parse a 10000 tags templete first time', function () {
-        var tempelete = "";
+    it('parse a 10000 tags template first time', function () {
+        var template = "";
         for (let i = 0; i < 10000; i++) {
             if (Math.random() > 0.33) {
-                tempelete += "<tag/>"
+                template += "<tag/>"
             } else if (Math.random() > 0.5) {
-                tempelete += "<tag>only text here</tag>"
+                template += "<tag>only text here</tag>"
             } else {
-                tempelete += "<tag ...t0 t1 t2=t3 t4=/>"
+                template += "<tag ...t0 t1 t2=t3 t4=/>"
             }
         }
-        var res = parse(tempelete)
+        var res = parse(template)
         assert.equal(res.elements.length, 10000);
     });
-    it('parse a 10000 tags templete second time', function () {
-        var tempelete = "";
+    it('parse a 10000 tags template second time', function () {
+        var template = "";
         for (let i = 0; i < 10000; i++) {
             if (Math.random() > 0.33) {
-                tempelete += "<tag/>"
+                template += "<tag/>"
             } else if (Math.random() > 0.5) {
-                tempelete += "<tag>only text here</tag>"
+                template += "<tag>only text here</tag>"
             } else {
-                tempelete += "<tag ...t0 t1 t2=t3 t4=/>"
+                template += "<tag ...t0 t1 t2=t3 t4=/>"
             }
         }
-        var res = parse(tempelete)
+        var res = parse(template)
         assert.equal(res.elements.length, 10000);
     });
-    it('parse a l0000 tags with long text templete', function () {
-        var tempelete = "";
+    it('parse a l0000 tags with long text template', function () {
+        var template = "";
         for (let i = 0; i < 10000; i++) {
-            tempelete += "<tag>"
+            template += "<tag>"
 
             for (let j = 0; j < 100; j++) {
-                tempelete += "only text here "
+                template += "only text here "
             }
 
-            tempelete +="</tag>"
+            template +="</tag>"
         }
-        var res = parse(tempelete)
+        var res = parse(template)
         assert.equal(res.elements.length, 10000);
     });
     it('throws on <tag>', function () {
@@ -593,6 +593,25 @@ describe('JSX', function () {
                 "children": []
             }]
         )
+    });
+    it('parse and run a 10000 tags templete', function () {
+        var template = "";
+        for (let i = 0; i < 10000; i++) {
+            if (Math.random() > 0.33) {
+                template += "<tag/>"
+            } else if (Math.random() > 0.5) {
+                template += "<tag>only text here</tag>"
+            } else {
+                template += "<tag t1 t2=t3 t4=/>"
+            }
+        }
+        var mock = ReactMock();
+
+        var res = jsx(mock, {
+            Tag: "<Tag>"
+        })([template]);
+
+        assert.equal(mock.arguments.length, 10001)
     });
     it('throws on <Tag ...test/>', function () {
         var mock = ReactMock();
