@@ -242,10 +242,10 @@
     }
 
     // regexs
-    const until_not_space = /[^\s\r\n]/g;
+    const until_not_space = /\S/g;
     const until_tag = /<|$/g;
-    const until_space_or_right_tag = /(\s|\r|\n|>|\/>)/g;
-    const until_equal_or_space_or_right_tag = /(=|\s|\r|\n|>|\/>)/g;
+    const until_space_or_right_tag = /(\s|>|\/>)/g;
+    const until_equal_or_space_or_right_tag = /(=|\s|>|\/>)/g;
     const until_single_quote = /'/g;
     const until_double_quote = /"/g;
     const expect_tag = /^</g;
@@ -253,12 +253,12 @@
     const expect_right_tag = /^>|^\/>/g;
     const expect_right_close_tag = /^\/>/g;
     const expect_spread_property = /^\.\.\./g;
-    const expect_attribute_to_have_value = /^=[^\s\r\n]/g;
+    const expect_attribute_to_have_value = /^=\S/g;
     // skip the value match if it doesn't have any
     const expect_attribute_to_have_equal = /^=/g;
     const expect_single_quote = /^'/g;
     const expect_double_quote = /^"/g;
-    const test_non_space = /[^\s\r\n]/g;
+    const test_non_space = /\S/g;
 
     const JSX_STATE = Object.assign({}, STATE, {
         MATCH_TAG: id('match_tag'),
