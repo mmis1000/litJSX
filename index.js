@@ -751,7 +751,8 @@
                                     return mapToPropertyString(node, key);
                                 }).join(',\n') + 
                             '},' + node.attributeMixins.map(function (str) {
-                                if (!str.match(placeholderRegex)) {
+                                const res = str.match(placeholderRegex);
+                                if (!res || str !== res[0]) {
                                     throw new Error('cannot expand a string ' + str)
                                 } else {
                                     return str.match(placeholderRegex)[0];

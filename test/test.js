@@ -643,4 +643,15 @@ describe('JSX', function () {
             `
         }, /cannot expand a string test/)
     });
+    it('throws on <Tag ...test${{}}/>', function () {
+        var mock = ReactMock();
+        assert.throws(function (){
+            jsx(mock, {
+                Tag: "<Tag>"
+            })
+            `
+                <Tag ...test${{}}/>
+            `
+        }, /cannot expand a string/)
+    });
 })
