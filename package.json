@@ -1,14 +1,14 @@
 {
-  "name": "lit-jsx",
+  "name": "@mmis1000/lit-jsx",
   "version": "1.0.0",
-  "description": "",
+  "description": "a jsx parser written with tagged template",
   "main": "index.js",
   "scripts": {
     "test": "mocha",
     "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "build": "uglifyjs index.js -o litJSX.min.js --compress --mangle"
   },
-  "author": "",
+  "author": "mmis1000<mmis10002@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "chai": "^4.1.2",
