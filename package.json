@@ -1,6 +1,6 @@
 {
   "name": "@mmis1000/lit-jsx",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "a jsx parser written with tagged template",
   "keywords": ["jsx", "tagged", "template", "literal"],
   "main": "index.js",
