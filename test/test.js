@@ -332,6 +332,16 @@ describe('Parser', function () {
             parse('<tag =val/>')
         }, /attribute without name/)
     })
+    it('throws on <tag .../>', function () {
+        assert.throws(function () {
+            parse('<tag .../>')
+        }, /nothing to spread/)
+    })
+    it('throws on <tag ... />', function () {
+        assert.throws(function () {
+            parse('<tag ... />')
+        }, /nothing to spread/)
+    })
     it('throws on <tag></tag attr >', function () {
         assert.throws(function () {
             parse('<tag></tag attr >')

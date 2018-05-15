@@ -252,8 +252,9 @@
     const expect_left_close_tag = /^<\//g;
     const expect_right_tag = /^>|^\/>/g;
     const expect_right_close_tag = /^\/>/g;
-    const expect_spread_property = /^\.\.\.\S/g;
-    const expect_attribute_to_have_value = /^=\S/g;
+    const expect_spread_property = /^\.\.\./g;
+    const expect_attribute_to_have_value = /^=[^\s\r\n]/g;
+    // skip the value match if it doesn't have any
     const expect_attribute_to_have_equal = /^=/g;
     const expect_single_quote = /^'/g;
     const expect_double_quote = /^"/g;
@@ -527,6 +528,10 @@
                     context.ptr += 3;
                     const text = context.walk(until_space_or_right_tag)
                     const parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
+
+                    if (text.length === 0) {
+                        throw new SyntaxError('nothing to spread')
+                    }
 
                     parentData.attributeMixins.push(text);
                     context.state = JSX_STATE.INIT;
