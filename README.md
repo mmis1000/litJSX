@@ -23,26 +23,27 @@ ReactDOM.render(
  * @param {Object<string, Componenet>} componenets the templete will try to create element as string directly if it is not registerd here
  * @returns {function} The templete literal function
  */
-var templeteFunction = litJSX.jsx(React, {Component1, Component1, ...other});
+var jsx = litJSX.jsx(React, {Component1, Component1, ...other});
 ```
 
 ```js
 /**
- * @param {any[]} any
+ * @param {string[]} templete
+ * @param {...any} argumenets
  * @returns {Element} react element
  */
-templeteFunction;
+jsx;
 ```
 
 # Basic Usage
 ```js
 // it will return the element if there is only one root element
-templeteFunction`
+jsx`
     <div></div>
 `
 
 // it will return a React.Fragment if there are more than one root element.
-templeteFunction`
+jsx`
     <div></div>
     <div></div>
 `
@@ -50,30 +51,40 @@ templeteFunction`
 
 # Supported Syntaxs
 
+## common entities
+```js
+// it unesacpe only these entities in tag body and attribute value
+jsx`
+    <div value="&amp;&lt;&gt;&quot;&#039;&nbsp;">
+        &amp;&lt;&gt;&quot;&#039;&nbsp;
+    </div>
+`
+// you got &<>"'\u00A0 in both property and body
+```
 ## self closed tag
 ```js
-templeteFunction`
+jsx`
     <div/>
 `
 ```
 
 ## open tag
 ```js
-templeteFunction`
+jsx`
     <div>content</div>
 `
 ```
 
 ## text only (will be wrapped into a fragment)
 ```js
-templeteFunction`
+jsx`
     There is only text
 `
 ```
 
 ## fragment (although there is no reason to use it. It is automatically wrapped if there is more than one element at root)
 ```js
-templeteFunction`
+jsx`
     <>
         There is only text
     </>
@@ -82,7 +93,7 @@ templeteFunction`
 
 ## props
 ```js
-templeteFunction`
+jsx`
     <div attribute=x/>
     <div attribute='x'/>
     <div attribute="x"/>
@@ -91,14 +102,14 @@ templeteFunction`
 
 ## data in body
 ```js
-templeteFunction`
+jsx`
     <div>
         The data here can also be
         ${"text"}
         or
-        ${templeteFunction`another element`}
+        ${jsx`another element`}
         or
-        ${[templeteFunction`array of elements`]}
+        ${[jsx`array of elements`]}
         just like original jsx
     </div>
 `
@@ -106,21 +117,21 @@ templeteFunction`
 
 ## data in key (will be stringfied and concat to other part)
 ```js
-templeteFunction`
+jsx`
     <div ${"key"}="value"/>
 `
 ```
 
 ## only data in value (will not be stringfied)
 ```js
-templeteFunction`
+jsx`
     <div key=${12}/>
 `
 ```
 
 ## mixed data in value (will be stringfied and concat to other part)
 ```js
-templeteFunction`
+jsx`
     <div key=${"val"}ue/>
 `
 ```
@@ -128,7 +139,7 @@ templeteFunction`
 ## Object literal spread (will be mixed into the props by Object.assign)
 ```js
 var ObjectToSpread = {key: "value"};
-templeteFunction`
+jsx`
     <div ...${ObjectToSpread}/>
 `
 ```

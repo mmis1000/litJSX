@@ -1,6 +1,22 @@
 // @ts-check
 
 (function () {
+    /**
+     * prevent the whole object from being edited
+     * @param {Object} obj 
+     */
+    function deepFreeze(obj) {
+        var propNames = Object.getOwnPropertyNames(obj);
+        propNames.forEach(function (name) {
+            var prop = obj[name];
+
+            if (typeof prop == 'object' && prop !== null)
+                deepFreeze(prop);
+        });
+
+        return Object.freeze(obj);
+    }
+
 
     const id = (name) => Symbol(name)
 
@@ -20,7 +36,7 @@
         SKIP_SPACE: id('skip_space'),
     }
 
-    Object.freeze(STATE);
+    deepFreeze(STATE);
 
     /**
      * @typedef {function(Context):any} RuleHandle
@@ -225,10 +241,23 @@
         }
     }
 
-    const regexs = {
-        until_not_space: /[^\s\r\n]/g,
-        until_tag: /<|$/g,
-    }
+    // regexs
+    const until_not_space = /[^\s\r\n]/g;
+    const until_tag = /<|$/g;
+    const until_space_or_right_tag = /(\s|\r|\n|>|\/>)/g;
+    const until_equal_or_space_or_right_tag = /(=|\s|\r|\n|>|\/>)/g;
+    const until_single_quote = /'/g;
+    const until_double_quote = /"/g;
+    const expect_tag = /^</g;
+    const expect_left_close_tag = /^<\//g;
+    const expect_right_tag = /^>|^\/>/g;
+    const expect_right_close_tag = /^\/>/g;
+    const expect_spread_property = /^\.\.\.\S/g;
+    const expect_attribute_to_have_value = /^=\S/g;
+    const expect_attribute_to_have_equal = /^=/g;
+    const expect_single_quote = /^'/g;
+    const expect_double_quote = /^"/g;
+    const test_non_space = /[^\s\r\n]/g;
 
     const JSX_STATE = Object.assign({}, STATE, {
         MATCH_TAG: id('match_tag'),
@@ -249,6 +278,7 @@
             },
         }
     })
+    deepFreeze(JSX_STATE);
 
     class JSXElement {
         /**
@@ -379,11 +409,11 @@
             }
         },
         [JSX_STATE.SKIP_SPACE]( /** @type {Context} */ context) {
-            context.walk(regexs.until_not_space)
+            context.walk(until_not_space)
             context.state = JSX_STATE.MATCH_TAG;
         },
         [JSX_STATE.MATCH_TAG]( /** @type {Context} */ context) {
-            if (context.expect(/^</)) {
+            if (context.expect(expect_tag)) {
                 // it is a tag
                 context.state = this.TAG;
             } else {
@@ -460,7 +490,7 @@
                 [JSX_STATE.INIT]( /** @type {Context} */ context) {
                     const data = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
-                    if (context.expect(/^<\//)) {
+                    if (context.expect(expect_left_close_tag)) {
                         context.ptr += 2
                         data.left = "close"
                     } else {
@@ -472,8 +502,8 @@
                 }
             },
             [JSX_STATE.TAG.NAME]( /** @type {Context} */ context) {
-                context.walk(regexs.until_not_space);
-                const name = context.walk(/(\s|\/?>)/g)
+                context.walk(until_not_space);
+                const name = context.walk(until_space_or_right_tag)
                 const data = /** @type {TagData} */ ( /** @type {any} */ (context.data));
                 data.name = name;
 
@@ -481,12 +511,12 @@
             },
             ATTRIB: {
                 [JSX_STATE.INIT]( /** @type {Context} */ context) {
-                    context.walk(regexs.until_not_space);
+                    context.walk(until_not_space);
 
-                    if (context.expect(/^\/?>/)) {
+                    if (context.expect(expect_right_tag)) {
                         // right tag
                         context.state = STATE.LEAVE;
-                    } else if (context.expect(/^\.\.\.\S/)) {
+                    } else if (context.expect(expect_spread_property)) {
                         context.state = JSX_STATE.TAG.ATTRIB.SPREAD;
                     } else {
                         context.state = JSX_STATE.TAG.ATTRIB.NAME;
@@ -495,25 +525,25 @@
                 [JSX_STATE.TAG.ATTRIB.SPREAD]( /** @type {Context} */ context) {
                     // remove ...
                     context.ptr += 3;
-                    const text = context.walk(/(\s|\r|\n|\/?>)/g)
+                    const text = context.walk(until_space_or_right_tag)
                     const parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
                     parentData.attributeMixins.push(text);
                     context.state = JSX_STATE.INIT;
                 },
                 [JSX_STATE.TAG.ATTRIB.NAME]( /** @type {Context} */ context) {
-                    const text = context.walk(/(=|\s|\/?>)/g);
+                    const text = context.walk(until_equal_or_space_or_right_tag);
 
                     const data = /** @type {AttributeData} */ ( /** @type {any} */ (context.data));
                     const parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
                     if (text.length === 0) {
                         throw new SyntaxError('attribute without name')
-                    } else if (context.expect(/^=\S/)) {
+                    } else if (context.expect(expect_attribute_to_have_value)) {
                         context.ptr++;
                         data.name = text;
                         context.state = JSX_STATE.TAG.ATTRIB.VALUE;
-                    } else if (context.expect(/^=/)) {
+                    } else if (context.expect(expect_attribute_to_have_equal)) {
                         context.ptr++;
                         parentData.attributes[text] = "";
                         context.state = JSX_STATE.INIT;
@@ -528,16 +558,16 @@
                      * @type {string}
                      */
                     let text;
-                    if (context.expect(/^'/)) {
+                    if (context.expect(expect_single_quote)) {
                         context.ptr++;
-                        text = context.walk(/'/g);
+                        text = context.walk(until_single_quote);
                         context.ptr++;
-                    } else if (context.expect(/^"/)) {
+                    } else if (context.expect(expect_double_quote)) {
                         context.ptr++;
-                        text = context.walk(/"/g);
+                        text = context.walk(until_double_quote);
                         context.ptr++;
                     } else {
-                        text = context.walk(/(\s|\/?>)/g);
+                        text = context.walk(until_space_or_right_tag);
                     }
                     const data = /** @type {AttributeData} */ ( /** @type {any} */ (context.data));
                     const parentData = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
@@ -550,7 +580,7 @@
                 [JSX_STATE.INIT]( /** @type {Context} */ context) {
                     const data = /** @type {TagData} */ ( /** @type {any} */ (context.data.parent));
 
-                    if (context.expect(/^\/>/)) {
+                    if (context.expect(expect_right_close_tag)) {
                         context.ptr += 2;
                         data.right = "close"
                     } else {
@@ -564,7 +594,7 @@
         },
         TEXT: {
             [JSX_STATE.INIT]( /** @type {Context} */ context) {
-                const text = context.walk(regexs.until_tag);
+                const text = context.walk(until_tag);
 
                 if (text == null) {
                     throw new Error('unknown state, how should I enter here?')
@@ -572,8 +602,8 @@
 
                 const data = /** @type {RootData} */ ( /** @type {any} */ (context.data.parent));
 
-                if (text.match(/[^\s\r\n]/)) {
-                    data.peak().elements.push(text.replace(/[\s|\r|\n]+$/, ''));
+                if (test_non_space.test(text)) {
+                    data.peak().elements.push(text.trim());
                 }
 
                 context.state = JSX_STATE.LEAVE;
@@ -684,12 +714,12 @@
                             prop += res[0];
                         } else {
                             // a parital match var=a{"val"}
-                            prop += JSON.stringify(value).replace(placeholderRegex, function (match) {
+                            prop += JSON.stringify(unescapeHtml(value)).replace(placeholderRegex, function (match) {
                                 return '"+' + match + '+"'
                             })
                         }
                     } else {
-                        prop += JSON.stringify(value);
+                        prop += JSON.stringify(unescapeHtml(value));
                     }
 
                     return prop;

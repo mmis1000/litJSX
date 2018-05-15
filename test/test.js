@@ -255,7 +255,7 @@ describe('Parser', function () {
             "attributeMixins": []
         })
     });
-    it('parse a 10000 tags templete', function () {
+    it('parse a 10000 tags templete first time', function () {
         var tempelete = "";
         for (let i = 0; i < 10000; i++) {
             if (Math.random() > 0.33) {
@@ -266,7 +266,36 @@ describe('Parser', function () {
                 tempelete += "<tag ...t0 t1 t2=t3 t4=/>"
             }
         }
-        parse(tempelete)
+        var res = parse(tempelete)
+        assert.equal(res.elements.length, 10000);
+    });
+    it('parse a 10000 tags templete second time', function () {
+        var tempelete = "";
+        for (let i = 0; i < 10000; i++) {
+            if (Math.random() > 0.33) {
+                tempelete += "<tag/>"
+            } else if (Math.random() > 0.5) {
+                tempelete += "<tag>only text here</tag>"
+            } else {
+                tempelete += "<tag ...t0 t1 t2=t3 t4=/>"
+            }
+        }
+        var res = parse(tempelete)
+        assert.equal(res.elements.length, 10000);
+    });
+    it('parse a l0000 tags with long text templete', function () {
+        var tempelete = "";
+        for (let i = 0; i < 10000; i++) {
+            tempelete += "<tag>"
+
+            for (let j = 0; j < 100; j++) {
+                tempelete += "only text here "
+            }
+
+            tempelete +="</tag>"
+        }
+        var res = parse(tempelete)
+        assert.equal(res.elements.length, 10000);
     });
     it('throws on <tag>', function () {
         assert.throws(function () {
@@ -527,7 +556,7 @@ describe('JSX', function () {
             }]
         )
     });
-    it('unescape entities if there are', function () {
+    it('unescape entities in body if there are', function () {
         var mock = ReactMock();
         jsx(mock, {
             Tag: "<Tag>"
@@ -543,6 +572,25 @@ describe('JSX', function () {
                 "children": [
                     "&lt; <>\"'\u00A0"
                 ]
+            }]
+        )
+    });
+    it('unescape entities in plain attributes if there are', function () {
+        var mock = ReactMock();
+        jsx(mock, {
+            Tag: "<Tag>"
+        })
+        `
+            <Tag val="&amp;lt; &lt;&gt;&quot;&#039;&nbsp;"></Tag>
+        `
+
+        assert.deepEqual(
+            mock.arguments, [{
+                "name": "<Tag>",
+                "attributes": {
+                    val: "&lt; <>\"'\u00A0"
+                },
+                "children": []
             }]
         )
     });
