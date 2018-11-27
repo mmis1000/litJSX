@@ -1,5 +1,7 @@
 # [WIP] litJSX
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/mmis1000/litJSX.svg)](https://greenkeeper.io/)
+
 A 10kb(minified) only JSX compiler running in browser  
 Write React without tool chains!
 
