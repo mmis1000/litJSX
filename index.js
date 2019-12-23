@@ -260,6 +260,16 @@
     const expect_double_quote = /^"/g;
     const test_non_space = /\S/g;
 
+    // close tag and open tag
+    const OPEN = 0;
+    const CLOSE = 1;
+
+    // tag part
+    const TAG_LEFT = 0;
+    const TAG_NAME = 1;
+    const TAG_ATTRIBUTES = 2;
+    const TAG_RIGHT = 3;
+
     const JSX_STATE = Object.assign({}, STATE, {
         MATCH_TAG: id('match_tag'),
         TAG: {
@@ -355,11 +365,11 @@
      * @property {boolean} initilized
      * @property {string} name - may be null for <> and </> tag
      * @property {RootData} parent
-     * @property {"open"|"close"} left
-     * @property {"open"|"close"} right
+     * @property {0|1} left
+     * @property {0|1} right
      * @property {Object<string, string>} attributes
      * @property {string[]} attributeMixins
-     * @property {"left"|"name"|"attributes"|"right"} part
+     * @property {0|1|2|3} part
      */
 
     /**
@@ -434,34 +444,34 @@
                     data.left = null;
                     data.attributes = {};
                     data.right = null;
-                    data.part = "left";
+                    data.part = TAG_LEFT;
 
                     context.state = this.LEFT;
                     return;
                 }
 
-                if (data.part === "left") {
-                    data.part = "name";
+                if (data.part === TAG_LEFT) {
+                    data.part = TAG_NAME;
                     context.state = JSX_STATE.TAG.NAME;
                     return;
                 }
 
-                if (data.part === "name") {
-                    data.part = "attributes";
+                if (data.part === TAG_NAME) {
+                    data.part = TAG_ATTRIBUTES;
                     context.state = this.ATTRIB;
                     return;
                 }
-                if (data.part === "attributes") {
-                    data.part = "right";
+                if (data.part === TAG_ATTRIBUTES) {
+                    data.part = TAG_RIGHT;
                     context.state = this.RIGHT;
                     return;
                 }
-                if (data.part === "right") {
+                if (data.part === TAG_RIGHT) {
                     // console.log(data)
 
-                    if (data.left === "close" && data.right === "close") {
+                    if (data.left === CLOSE && data.right === CLOSE) {
                         throw new SyntaxError('both end closed tag');
-                    } else if (data.left === "close") {
+                    } else if (data.left === CLOSE) {
                         if (Object.keys(data.attributes).length > 0) {
                             throw new SyntaxError("close tag can't has attribute");
                         }
@@ -471,7 +481,7 @@
                             throw new SyntaxError(`unmateched tags <${data.parent.peak().name}></${data.name}>`)
                         }
                         data.parent.leave();
-                    } else if (data.right === "close") {
+                    } else if (data.right === CLOSE) {
                         if (!data.name) {
                             throw new SyntaxError("you can't write a self close fragment!")
                         }
@@ -493,10 +503,10 @@
 
                     if (context.expect(expect_left_close_tag)) {
                         context.ptr += 2
-                        data.left = "close"
+                        data.left = CLOSE
                     } else {
                         context.ptr += 1
-                        data.left = "open"
+                        data.left = OPEN
                     }
 
                     context.state = STATE.LEAVE;
@@ -587,10 +597,10 @@
 
                     if (context.expect(expect_right_close_tag)) {
                         context.ptr += 2;
-                        data.right = "close"
+                        data.right = CLOSE;
                     } else {
                         context.ptr += 1;
-                        data.right = "open"
+                        data.right = OPEN;
                     }
 
                     context.state = STATE.LEAVE;
